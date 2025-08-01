@@ -28,7 +28,6 @@ const LoginModal = ({ onClose }) => {
     <div style={styles.modal}>
       <div style={styles.modalContent}>
         <h3>登录 / Login</h3>
-
         <input
           type="text"
           placeholder="用户名 / Username"
@@ -37,7 +36,6 @@ const LoginModal = ({ onClose }) => {
           style={styles.input}
           onKeyDown={handleKeyDown}
         />
-
         <input
           type="password"
           placeholder="密码 / Password"
@@ -46,9 +44,7 @@ const LoginModal = ({ onClose }) => {
           style={styles.input}
           onKeyDown={handleKeyDown}
         />
-
         {error && <p style={styles.error}>{error}</p>}
-
         <div style={styles.actions}>
           <button onClick={onClose}>关闭 / Close</button>
           <button onClick={handleLogin}>登录 / Login</button>
