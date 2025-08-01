@@ -1,43 +1,53 @@
-import { useUser } from "../context/UserContext"
-import { mockSignup } from "../mockApi"
-import { useState } from "react"
+import { useDispatch, useSelector } from "react-redux";
+import { signupUser, fetchSignups } from "../store/signupSlice";
+import { useState } from "react";
 
-const SignupButton = ({ signedList = [], onSignupSuccess }) => {
-  const { user } = useUser()
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState("")
-  const [isError, setIsError] = useState(false)
+const SignupButton = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.currentUser); // ✅ 从 Redux 获取 user
+  const signed = useSelector((state) => state.signup.signedList || []);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
-  const alreadySigned = user && signedList.some(p => p.id === user.id)
+  const alreadySigned =
+    user && signed.some((p) => String(p.id) === String(user.id));
 
   const handleSignup = async () => {
     if (!user) {
-      setMessage("请先登录 / Please log in first")
-      setIsError(true)
-      return
+      setMessage("请先登录 / Please log in first");
+      setIsError(true);
+      return;
     }
 
-    setLoading(true)
-    setMessage("")
-    setIsError(false)
+    setLoading(true);
+    setMessage("");
+    setIsError(false);
 
     try {
-      const res = await mockSignup(user)
+      const res = await dispatch(signupUser(user)).unwrap();
       if (res.success) {
-        setMessage("报名成功 / Signup successful")
-        setIsError(false)
-        onSignupSuccess?.() // ✅ 调用新的回调名
+        setMessage("报名成功 / Signup successful");
+        setIsError(false);
+        dispatch(fetchSignups()); // 自动刷新报名列表
       } else {
-        setMessage(res.message || "报名失败 / Signup failed")
-        setIsError(true)
+        setMessage(res.message || "报名失败 / Signup failed");
+        setIsError(true);
       }
     } catch (err) {
-      setMessage("发生错误 / Error occurred")
-      setIsError(true)
+      setMessage("发生错误 / Error occurred");
+      setIsError(true);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+
+    console.log("👤 当前用户 user:", user);
+    console.log("📝 报名列表 signed:", signed);
+    console.log(
+      "📌 判断结果:",
+      signed.some((p) => String(p.id) === String(user?.id))
+    );
+  };
 
   return (
     <div style={{ marginBottom: "1.5rem" }}>
@@ -54,7 +64,7 @@ const SignupButton = ({ signedList = [], onSignupSuccess }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default SignupButton
+export default SignupButton;

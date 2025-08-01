@@ -1,45 +1,45 @@
-import { useUser } from "../context/UserContext"
-import { mockCancelSignup } from "../mockApi"
-import { useState } from "react"
+import { useDispatch, useSelector } from "react-redux";
+import { cancelSignupUser, fetchSignups } from "../store/signupSlice";
+import { useState } from "react";
 
-const CancelButton = ({ signedList = [], onCancelSuccess }) => {
-  const { user } = useUser()
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState("")
-  const [isError, setIsError] = useState(false)
+const CancelButton = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.currentUser); // ✅ 从 Redux 获取 user
+  const signedList = useSelector((state) => state.signup.signedList);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
 
-  // ✅ 只有报名过的人才能取消
-  const alreadySigned = user && signedList.some(p => p.id === user.id)
-  if (!alreadySigned) return null
+  const alreadySigned =
+    user &&
+    signedList &&
+    signedList.some((p) => String(p.id) === String(user.id));
+
+  if (!alreadySigned) return null;
 
   const handleCancel = async () => {
     if (!user) {
-      setMessage("请先登录 / Please log in first")
-      setIsError(true)
-      return
+      setMessage("请先登录 / Please log in first");
+      setIsError(true);
+      return;
     }
 
-    setLoading(true)
-    setMessage("")
-    setIsError(false)
+    setLoading(true);
+    setMessage("");
+    setIsError(false);
 
     try {
-      const res = await mockCancelSignup(user)
-      if (res.success) {
-        setMessage("已取消报名 / Signup cancelled")
-        setIsError(false)
-        onCancelSuccess?.() // ✅ 通知刷新列表
-      } else {
-        setMessage(res.message || "取消失败 / Cancel failed")
-        setIsError(true)
-      }
+      const res = await dispatch(cancelSignupUser(user)).unwrap();
+      setMessage("已取消报名 / Signup cancelled");
+      setIsError(false);
+      dispatch(fetchSignups()); // ✅ 重新获取报名数据
     } catch (err) {
-      setMessage("发生错误 / Error occurred")
-      setIsError(true)
+      setMessage(err || "取消失败 / Cancel failed");
+      setIsError(true);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div style={{ marginBottom: "1.5rem" }}>
@@ -52,7 +52,7 @@ const CancelButton = ({ signedList = [], onCancelSuccess }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default CancelButton
+export default CancelButton;

@@ -1,35 +1,43 @@
-import { useState, useEffect } from "react"
-import { useUser } from "../context/UserContext"
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateEventInfo } from "../store/eventInfoSlice";
 
 const EventInfo = () => {
-  const { user } = useUser()
-  const [info, setInfo] = useState("")
-  const [editing, setEditing] = useState(false)
-  const [tempInfo, setTempInfo] = useState("")
+  const user = useSelector((state) => state.user.currentUser); // ✅ Redux 获取用户信息
+  const info = useSelector((state) => state.eventInfo.info);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const stored = localStorage.getItem("eventInfo")
-    if (stored) setInfo(stored)
-  }, [])
+  const [editing, setEditing] = useState(false);
+  const [tempInfo, setTempInfo] = useState("");
 
   const saveInfo = () => {
-    localStorage.setItem("eventInfo", tempInfo)
-    setInfo(tempInfo)
-    setEditing(false)
-  }
+    dispatch(updateEventInfo(tempInfo));
+    setEditing(false);
+  };
 
   return (
-    <div style={{ marginBottom: "2rem", border: "1px solid #ccc", padding: "1rem", borderRadius: "8px" }}>
+    <div
+      style={{
+        marginBottom: "2rem",
+        border: "1px solid #ccc",
+        padding: "1rem",
+        borderRadius: "8px",
+      }}
+    >
       <h3>活动信息 / Event Info</h3>
 
       {!editing ? (
         <>
-          <p style={{ whiteSpace: "pre-wrap" }}>{info || "暂无信息 / No event info yet"}</p>
+          <p style={{ whiteSpace: "pre-wrap" }}>
+            {info || "暂无信息 / No event info yet"}
+          </p>
           {user?.id === "admin" && (
-            <button onClick={() => {
-              setTempInfo(info)
-              setEditing(true)
-            }}>
+            <button
+              onClick={() => {
+                setTempInfo(info);
+                setEditing(true);
+              }}
+            >
               编辑 / Edit
             </button>
           )}
@@ -49,7 +57,7 @@ const EventInfo = () => {
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default EventInfo
+export default EventInfo;
